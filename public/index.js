@@ -1,8 +1,5 @@
 'use strict';
 
-//list of bats
-//useful for ALL 5 steps
-//could be an array of objects that you fetched from api or database
 const bars = [{
   'id': 'f944a3ff-591b-4d5b-9b67-c7e08cba9791',
   'name': 'freemousse-bar',
@@ -20,12 +17,6 @@ const bars = [{
   'pricePerPerson': 80
 }];
 
-//list of current booking events
-//useful for ALL steps
-//the time is hour
-//The `price` is updated from step 1 and 2
-//The `commission` is updated from step 3
-//The `options` is useful from step 4
 const events = [{
   'id': 'bba9500c-fd9e-453f-abf1-4cd8f52af377',
   'booker': 'esilv-bde',
@@ -72,9 +63,6 @@ const events = [{
     'privateaser': 0
   }
 }];
-
-//list of actors for payment
-//useful from step 5
 const actors = [{
   'eventId': 'bba9500c-fd9e-453f-abf1-4cd8f52af377',
   'payment': [{
@@ -147,5 +135,63 @@ const actors = [{
 }];
 
 console.log(bars);
+console.log(events);
+console.log(actors);
+
+
+for(var i = 0; i < events.length; i++)
+{
+  for(var j = 0; j < bars.length; j++)
+  {
+    if(events[i].barId == bars[j].id)
+    {
+      var price_event = events[i].time * bars[j].pricePerHour + events[i].persons * bars[j].pricePerPerson;
+      //Step 2
+      if(events[i].persons >= 10)
+      {
+        price_event = price_event - 0.1 * price_event;
+      }
+      if(events[i].persons >= 20)
+      {
+        price_event = price_event - 0.3 * price_event;
+      }
+      if(events[i].persons >= 60)
+      {
+        price_event = price_event - 0.5 * price_event;
+      }
+    //Step4
+    if (events[i].options.deductibleReduction == true)
+      {
+    price_event = price_event + events[i].persons;
+      }
+    events[i].price = price_event;
+      console.log("Price : "+ price_event + " for :");
+      console.log(events[i]);
+
+    //Step 3
+    var commission_pot = 0.3 * price_event;
+    events[i].commission.insurance = 0.5 * commission_pot;
+    events[i].commission.treasury = events[i].persons;
+    events[i].commission.privateaser = (0.5 * commission_pot) - events[i].persons;
+    console.log("Insurance : " + events[i].commission.insurance);
+    console.log("Treasury : " + events[i].commission.treasury);
+    console.log("Privateaser : " + events[i].commission.privateaser);
+    }
+  }
+}
+//Step5
+actors.forEach(actor => {
+events.forEach(event =>{
+  if(actor.eventId == event.id)
+  {
+    actor.payment[0].amount = event.price;
+    actor.payment[1].amount = event.price - (event.price * 0.3);
+    actor.payment[2].amount = event.commission.insurance;
+    actor.payment[3].amount = event.persons;
+    actor.payment[4].amount = event.commission.privateaser;
+  }
+})
+})
+
 console.log(events);
 console.log(actors);
